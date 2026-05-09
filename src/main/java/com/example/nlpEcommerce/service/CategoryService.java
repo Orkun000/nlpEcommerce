@@ -9,67 +9,15 @@ import com.example.nlpEcommerce.model.Category;
 import com.example.nlpEcommerce.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
-@Transactional(readOnly = true)
-public class CategoryService {
-
-    private final CategoryRepository categoryRepository;
-
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
-    public List<CategoryResponse> getAllCategories() {
-        return categoryRepository.findAll().stream()
-                .map(CategoryResponse::from)
-                .collect(Collectors.toList());
-    }
-
-    public List<CategoryResponse> getRootCategories() {
-        return categoryRepository.findByParentIsNull().stream()
-                .map(CategoryResponse::from)
-                .collect(Collectors.toList());
-    }
-
-    public CategoryResponse getCategoryById(Long id) {
-        return CategoryResponse.from(findCategoryOrThrow(id));
-    }
-
-    @Transactional
-    public CategoryResponse createCategory(CategoryRequest request) {
-        if (categoryRepository.existsByName(request.getName())) {
-            throw new DuplicateResourceException(Messages.CATEGORY_DUPLICATE_NAME + request.getName());
-        }
-        Category category = new Category();
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
-        if (request.getParentId() != null) {
-            category.setParent(findCategoryOrThrow(request.getParentId()));
-        }
-        return CategoryResponse.from(categoryRepository.save(category));
-    }
-
-    @Transactional
-    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
-        Category category = findCategoryOrThrow(id);
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
-        category.setParent(request.getParentId() != null ? findCategoryOrThrow(request.getParentId()) : null);
-        return CategoryResponse.from(categoryRepository.save(category));
-    }
-
-    @Transactional
-    public void deleteCategory(Long id) {
-        findCategoryOrThrow(id);
-        categoryRepository.deleteById(id);
-    }
-
-    public Category findCategoryOrThrow(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Kategori", id));
-    }
+public interface CategoryService {
+    public List<CategoryResponse> getAllCategories();
+    public List<CategoryResponse> getRootCategories();
+    public CategoryResponse getCategoryById(Long id);
+    public CategoryResponse createCategory(CategoryRequest request);
+    public CategoryResponse updateCategory(Long id, CategoryRequest request);
+    public void deleteCategory(Long id);
+    public Category findCategoryOrThrow(Long id);
 }
